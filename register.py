@@ -27,13 +27,13 @@ def requestOTP(l):
 def register(l):
     mydb = mysql.connector.connect(
     host="127.0.0.1",
-    user="admin",
+    user="root",
     passwd="password",
     database="aminin_testing"
     )
 
     mycursor = mydb.cursor()
-    num_loop = 10
+    num_loop = 1
     provider = "sms"
     response_type="otp_code"
     client_id = "5d8218f2f48c3d6b94645142"
@@ -50,15 +50,15 @@ def register(l):
         random_string_firstname = randomString(10)
         people['name'] = str(random_string_firstname)
         people['email'] = str(random_string_firstname)+str(k)+'@test.com'
-        people['phone_number'] = str(randomNumber(12))
+        people['phone_number'] = str(randomNumber(10))
         peoples[k] = people
         l.client.headers['Content-Type'] = "application/x-www-form-urlencoded"
-        response =  l.client.post("/v1/oauth/otp/register",
+        response =  l.client.post("/api/v1/oauth/otp/register",
                                         {"name":people['name'],
                                         "email":people['email'],
-                                        "calling_code":people['calling_code'],
+                                        "calling_code":calling_code,
                                         "phone_number":people['phone_number'],
-                                        "state":people['state'],
+                                        "state":state,
                                         "client_id":client_id,
                                         "state":state,
                                         "scope":scope,
@@ -67,17 +67,21 @@ def register(l):
                                         })
         #insert to users
         sql_insert_user = "INSERT INTO users (email,name,calling_code,phone_number) VALUES (%s, %s, %s, %s)"
-        val_insert_user = (people['email'], people['name'],people['calling_code'],people['phone_number'])
+        val_insert_user = (people['email'], people['name'],calling_code,people['phone_number'])
         mycursor.execute(sql_insert_user, val_insert_user)
         #get token from response
         json_response_dict = response.json()
-        token = json_response_dict['data']['oauth']['access_token']
+        code = json_response_dict['result']['code']
+        otp_code= json_response_dict['result']['otp_code']
         #insert to login
-        sql_insert_login = "INSERT INTO login (email,token) VALUES (%s, %s)"
-        val_insert_login = (people['email'], token)
+        sql_insert_login = "INSERT INTO login (code,otp_code) VALUES (%s, %s)"
+        val_insert_login = (code, otp_code)
         mycursor.execute(sql_insert_login, val_insert_login)
         
     mydb.commit()
+
+
+
 
 def signin(l):
     mydb = mysql.connector.connect(
@@ -111,6 +115,10 @@ def signin(l):
 
     mydb.commit()
 
+
+def validateOTP(l):
+    l.client.post("/v1/oauth/otp/validate", {"username":"system", "password":"systembahaso"})
+
 def logout(l):
     l.client.post("/api/v3/signout", {"username":"system", "password":"systembahaso"})
 
@@ -121,7 +129,8 @@ def profile(l):
     l.client.get("/profile")
 
 class UserBehavior(TaskSet):
-    tasks = {register:1, signin: 3, profile: 1}
+    tasks = {register:1}
+    #tasks = {register:1, signin: 3, profile: 1}
 
 class WebsiteUser(HttpLocust):
     task_set = UserBehavior
