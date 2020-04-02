@@ -13,13 +13,16 @@ def randomNumber(number_length=12):
 
 def requestOTP(l):
     l.client.headers['Content-Type'] = "application/x-www-form-urlencoded"
-     l.client.headers['Accept'] = "application/json"
+    l.client.headers['Accept'] = "application/json"
     l.client.post("/v1/oauth/provider/login",
-    {"username":"system",
-    "password":"systembahaso",
-    "grant_type":"password",
-    "client_secret":"client1secret",
-    "client_id":"client1id"})
+    {"provider":"sms",
+    "response_type":"otp_code",
+    "scope":"free",
+    "phone_number":"",
+    "calling_code":"+62",
+    "client_id":"5d8218f2f48c3d6b94645142",
+    "client_id":"client1id"
+    })
 
 def register(l):
     mydb = mysql.connector.connect(
