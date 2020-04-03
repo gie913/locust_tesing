@@ -12,17 +12,43 @@ def randomNumber(number_length=12):
     return ''.join(str(random.randint(1,9)) for j in range(number_length))
 
 def requestOTP(l):
-    l.client.headers['Content-Type'] = "application/x-www-form-urlencoded"
-    l.client.headers['Accept'] = "application/json"
-    l.client.post("/v1/oauth/provider/login",
-    {"provider":"sms",
-    "response_type":"otp_code",
-    "scope":"free",
-    "phone_number":"",
-    "calling_code":"+62",
-    "client_id":"5d8218f2f48c3d6b94645142",
-    "client_id":"client1id"
-    })
+    mydb = mysql.connector.connect(
+    host="127.0.0.1",
+    user="admin",
+    passwd="password",
+    database="locust_log"
+    )
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT calling_code,phone_number FROM users  order by rand()limit 1")
+    myresult = mycursor.fetchall()
+    
+    for rows in myresult:
+        calling_code = rows[0]  #urutan pada db
+        phone_number = rows[1]
+        l.client.headers['Content-Type'] = "application/x-www-form-urlencoded"
+        l.client.headers['Accept'] = "application/json"
+        response = l.client.post("/v1/oauth/provider/login",
+        {"provider":"sms",
+        "response_type":"otp_code",
+        "scope":"free",
+        "phone_number":phone_number,
+        "calling_code":calling_code,
+        "client_id":"5d8218f2f48c3d6b94645142",
+        "client_id":"client1id"
+        }) 
+       json_response_dict = response.json()
+       code = json_response_dict['result']['code']
+       otp_code= json_response_dict['result']['otp_code']
+       #insert to otp
+       sql_insert_login = "INSERT INTO otp (code,otp_code) VALUES (%s, %s)"
+       val_insert_login = (code, otp_code)
+       mycursor.execute(sql_insert_login, val_insert_login)
+
+    mydb.commit()
+    
+    
+    
+    
 
 def register(l):
     mydb = mysql.connector.connect(
@@ -73,12 +99,50 @@ def register(l):
         json_response_dict = response.json()
         code = json_response_dict['result']['code']
         otp_code= json_response_dict['result']['otp_code']
-        #insert to login
-        sql_insert_login = "INSERT INTO login (code,otp_code) VALUES (%s, %s)"
+        #insert to otp
+        sql_insert_login = "INSERT INTO otp (code,otp_code) VALUES (%s, %s)"
         val_insert_login = (code, otp_code)
         mycursor.execute(sql_insert_login, val_insert_login)
         
     mydb.commit()
+
+
+
+def validateOTP(l):
+    mydb = mysql.connector.connect(
+    host="127.0.0.1",
+    user="admin",
+    passwd="password",
+    database="locust_log"
+    )
+    mycursor = mydb.cursor()
+    mycursor.execute("SzELECT otp_code,code FROM otp  order by rand()limit 1")
+    myresult = mycursor.fetchall()
+    
+    for rows in myresult:
+        otp_code = rows[0]  #urutan pada db
+        code = rows[1]
+        l.client.headers['Content-Type'] = "application/x-www-form-urlencoded"
+        l.client.headers['Accept'] = "application/json"
+        response = l.client.post("/api/v1/oauth/otp/validate",
+        {"grant_type":"authorization_otp_code",
+        "response_type":"otp_code",
+        "scope":"free",
+        "phone_number":phone_number,
+        "calling_code":calling_code,
+        "client_id":"5d8218f2f48c3d6b94645142",
+        "client_id":"client1id"
+        }) 
+       json_response_dict = response.json()
+       code = json_response_dict['result']['code']
+       otp_code= json_response_dict['result']['otp_code']
+       #insert to otp
+       sql_insert_login = "INSERT INTO otp (code,otp_code) VALUES (%s, %s)"
+       val_insert_login = (code, otp_code)
+       mycursor.execute(sql_insert_login, val_insert_login)
+
+    mydb.commit()
+    
 
 
 
@@ -115,9 +179,6 @@ def signin(l):
 
     mydb.commit()
 
-
-def validateOTP(l):
-    l.client.post("/v1/oauth/otp/validate", {"username":"system", "password":"systembahaso"})
 
 def logout(l):
     l.client.post("/api/v3/signout", {"username":"system", "password":"systembahaso"})
