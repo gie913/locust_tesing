@@ -2,11 +2,15 @@ from locust import HttpLocust, TaskSet
 import random
 import string
 import mysql.connector
+import configparser
 
-CONST_HOST = "127.0.0.1"
-CONST_USER = "root"
-CONST_PSWD = "password"
-CONST_DTBS = "aminin_testing"
+config = configparser.RawConfigParser()
+config.read('Config.properties')
+
+CONST_HOST = config.get('DatabaseSection', 'database.mysql.host')
+CONST_USER = config.get('DatabaseSection', 'database.mysql.user')
+CONST_PSWD = config.get('DatabaseSection', 'database.mysql.password')
+CONST_DTBS = config.get('DatabaseSection', 'database.mysql.name')
 
 
 def randomString(string_length=10):
