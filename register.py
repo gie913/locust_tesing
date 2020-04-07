@@ -3,6 +3,12 @@ import random
 import string
 import mysql.connector
 
+CONST_HOST = "127.0.0.1"
+CONST_USER = "root"
+CONST_PSWD = "password"
+CONST_DTBS = "aminin_testing"
+
+
 def randomString(string_length=10):
     """Generate a random string of fixed length """
     letters = string.ascii_lowercase
@@ -13,10 +19,10 @@ def randomNumber(number_length=12):
 
 def requestOTP(l):
     mydb = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    passwd="password",
-    database="aminin_testing"
+    host= CONST_HOST,
+    user= CONST_USER,
+    passwd= CONST_PSWD,
+    database= CONST_DTBS
     )
     mycursor = mydb.cursor()
     mycursor.execute("SELECT calling_code,phone_number FROM users  order by rand()limit 1")
@@ -27,7 +33,7 @@ def requestOTP(l):
         phone_number = rows[1]
         l.client.headers['Content-Type'] = "application/x-www-form-urlencoded"
         l.client.headers['Accept'] = "application/json"
-        response = l.client.post("/v1/oauth/provider/login",
+        response = l.client.post("/api/v1/oauth/otp/code",
         {"provider":"sms",
         "response_type":"otp_code",
         "scope":"free",
@@ -49,10 +55,10 @@ def requestOTP(l):
 
 def register(l):
     mydb = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    passwd="password",
-    database="aminin_testing"
+    host= CONST_HOST,
+    user= CONST_USER,
+    passwd= CONST_PSWD,
+    database= CONST_DTBS
     )
 
     mycursor = mydb.cursor()
@@ -106,10 +112,10 @@ def register(l):
 
 def validateOTP(l):
     mydb = mysql.connector.connect(
-    host="127.0.0.1",
-    user="root",
-    passwd="password",
-    database="aminin_testing"
+    host= CONST_HOST,
+    user= CONST_USER,
+    passwd= CONST_PSWD,
+    database= CONST_DTBS
     )
     mycursor = mydb.cursor()
     mycursor.execute("SELECT otp_code,code FROM otp  order by rand()limit 1")
@@ -140,10 +146,10 @@ def validateOTP(l):
 
 def signin(l):
     mydb = mysql.connector.connect(
-    host="127.0.0.1",
-    user="admin",
-    passwd="password",
-    database="locust_log"
+    host= CONST_HOST,
+    user= CONST_USER,
+    passwd= CONST_PSWD,
+    database= CONST_DTBS
     )
 
     mycursor = mydb.cursor()
