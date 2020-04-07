@@ -11,6 +11,8 @@ CONST_HOST = config.get('DatabaseSection', 'database.mysql.host')
 CONST_USER = config.get('DatabaseSection', 'database.mysql.user')
 CONST_PSWD = config.get('DatabaseSection', 'database.mysql.password')
 CONST_DTBS = config.get('DatabaseSection', 'database.mysql.name')
+CONST_CLIENT_ID = config.get('ClientSection', 'client.id')
+CONST_CLIENT_SECRET = config.get('ClientSection', 'client.secret')
 
 
 def randomString(string_length=10):
@@ -43,7 +45,7 @@ def requestOTP(l):
         "scope":"free",
         "phone_number":phone_number,
         "calling_code":calling_code,
-        "client_id":"5d8218f2f48c3d6b94645142",
+        "client_id":CONST_CLIENT_ID,
         "scope":"free"
         })
         json_response_dict = response.json()
@@ -69,7 +71,7 @@ def register(l):
     num_loop = 1
     provider = "sms"
     response_type="otp_code"
-    client_id = "5d8218f2f48c3d6b94645142"
+    client_id = CONST_CLIENT_ID
     state= "Indonesia"
     scope="free"
     calling_code = "+62"
@@ -134,8 +136,8 @@ def validateOTP(l):
         {"grant_type":"authorization_otp_code",
         "otp_code":code, #ini memang tertukar
         "otp":otp_code,
-        "client_id":"5d8218f2f48c3d6b94645142",
-        "client_secret":"WChQ8DqbJwrNK2HlzmN4ZmVIFkMjPmyl7JVUkY5x"
+        "client_id":CONST_CLIENT_ID,
+        "client_secret":CONST_CLIENT_SECRET
         }) 
         json_response_dict = response.json()
         email = json_response_dict['result']['user']['email']
@@ -148,41 +150,9 @@ def validateOTP(l):
     mydb.commit()
     
 
-def signin(l):
-    mydb = mysql.connector.connect(
-    host= CONST_HOST,
-    user= CONST_USER,
-    passwd= CONST_PSWD,
-    database= CONST_DTBS
-    )
-
-    mycursor = mydb.cursor()
-    mycursor.execute("SELECT email,password FROM users  order by rand()limit 1")
-    myresult = mycursor.fetchall()
-    
-    for rows in myresult:
-        email = rows[0]  #urutan pada db
-        password = rows[1]
-        l.client.headers['Content-Type'] = "application/x-www-form-urlencoded"
-        response =  l.client.post("/api/v3/signin",{
-                                        "username":email,
-                                        "password":password,
-                                        "grant_type":"password",
-                                        "client_secret":"client1secret",
-                                        "client_id":"client1id"})
-        #get token from response
-        json_response_dict = response.json()
-        token = json_response_dict['data']['oauth']['access_token']
-        #insert to login
-        sql_insert_login = "INSERT INTO login (email,token) VALUES (%s, %s)"
-        val_insert_login = (email, token)
-        mycursor.execute(sql_insert_login, val_insert_login)
-
-    mydb.commit()
-
 
 def logout(l):
-    l.client.post("/api/v3/signout", {"username":"system", "password":"systembahaso"})
+    l.client.get("/api/v1/signout")
 
 def index(l):
     l.client.get("/")
