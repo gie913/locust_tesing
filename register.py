@@ -161,7 +161,7 @@ def profile(l):
     l.client.get("/profile")
 
 class UserBehavior(TaskSet):
-    tasks = {register:1, requestOTP:1, validateOTP:1}
+    tasks = {register:2, requestOTP:1, validateOTP:1}
     #tasks = {register:1, signin: 3, profile: 1}
 
 class WebsiteUser(HttpLocust):
