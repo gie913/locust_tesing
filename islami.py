@@ -37,7 +37,7 @@ def sholatTime(l):
         response = l.client.get("/api/v1/sholat-time?latitude="+ latitude +"&longitude="+longitude)
         json_response_dict = response.json()
         if json_response_dict['code'] != 200:
-           raise FlowException('comment not created')
+           raise FlowException('not found')
 
 def consultationUstadList(l):
     mydb = mysql.connector.connect(
@@ -58,7 +58,7 @@ def consultationUstadList(l):
         response = l.client.get("/api/v1/consultation/asuser/ustads/list?page=1&per_page=10")
         json_response_dict = response.json()
         if json_response_dict['code'] != 200:
-           raise FlowException('comment not created')
+           raise FlowException('not found')
 
 def consultationOnGoing(l):
     mydb = mysql.connector.connect(
@@ -79,7 +79,7 @@ def consultationOnGoing(l):
         response = l.client.get("/api/v1/consultation/asuser/sessions/ongoing")
         json_response_dict = response.json()
         if json_response_dict['code'] != 200:
-           raise FlowException('comment not created')
+           raise FlowException('not found')
 
 
 def storeItemList(l):
@@ -101,7 +101,7 @@ def storeItemList(l):
         response = l.client.get("/api/v1/store-items/lists")
         json_response_dict = response.json()
         if json_response_dict['code'] != 200:
-           raise FlowException('comment not created') 
+           raise FlowException('not found') 
            
 def storeItemListGroup(l):
     mydb = mysql.connector.connect(
@@ -122,7 +122,7 @@ def storeItemListGroup(l):
         response = l.client.get("/api/v1/store-items/lists/group-by-code/LATIH_QURAN")
         json_response_dict = response.json()
         if json_response_dict['code'] != 200:
-           raise FlowException('comment not created') 
+           raise FlowException('not found') 
 
 
 def SelfReminderCategoryList(l):
@@ -136,7 +136,7 @@ def SelfReminderCategoryList(l):
     mycursor.execute("SELECT otp_code,code FROM otp  order by rand()limit 1")
     myresult = mycursor.fetchall()
     list_of_categories_id = []
-    
+    timezone = "Asia/Jakarta"
     for rows in myresult:
         otp_code = rows[0]  #urutan pada db
         code = rows[1]
@@ -146,7 +146,7 @@ def SelfReminderCategoryList(l):
         response = l.client.get("/api/v1/quotes/self-reminders/categories") 
         json_response_dict = response.json()
         if json_response_dict['code'] != 200:
-            raise FlowException('comment not created') 
+            raise FlowException('not found') 
        
 
 def SelfReminderCategoryIds():
@@ -160,7 +160,7 @@ def SelfReminderCategoryIds():
     mycursor.execute("SELECT otp_code,code FROM otp  order by rand()limit 1")
     myresult = mycursor.fetchall()
     list_of_categories_id = []
-    
+    timezone = "Asia/Jakarta"
     for rows in myresult:
         otp_code = rows[0]  #urutan pada db
         code = rows[1]
@@ -185,7 +185,7 @@ def SelfReminderCategoryChoose(l):
     mycursor = mydb.cursor()
     mycursor.execute("SELECT otp_code,code FROM otp  order by rand()limit 1")
     myresult = mycursor.fetchall()
-    
+    timezone = "Asia/Jakarta"
     for rows in myresult:
         l.client.headers['Authorization'] = "Bearer " + rows[0] 
         l.client.headers['Accept'] = "application/json"
@@ -195,7 +195,7 @@ def SelfReminderCategoryChoose(l):
         ) 
         json_response_dict = response.json()
         if json_response_dict['code'] != 200:
-            raise FlowException('comment not created') 
+            raise FlowException('not found') 
 
 def SelfReminderList(l):
     mydb = mysql.connector.connect(
@@ -208,9 +208,9 @@ def SelfReminderList(l):
     mycursor.execute("SELECT otp_code,code FROM otp  order by rand()limit 1")
     myresult = mycursor.fetchall()
     list_of_categories_id = []
-    
+    timezone = "Asia/Jakarta"
     for rows in myresult:
-        otp_code = rows[0]  #urutan pada db
+        otp_code = rows[0]
         code = rows[1]
         l.client.headers['Authorization'] = "Bearer " + rows[0] 
         l.client.headers['Accept'] = "application/json"
@@ -218,7 +218,56 @@ def SelfReminderList(l):
         response = l.client.get("/api/v1/quotes/self-reminders") 
         json_response_dict = response.json()
         if json_response_dict['code'] != 200:
-            raise FlowException('comment not created') 
+            raise FlowException('not found') 
+            
+
+def latihQuranSetting(l):
+    mydb = mysql.connector.connect(
+    host= CONST_HOST,
+    user= CONST_USER,
+    passwd= CONST_PSWD,
+    database= CONST_DTBS
+    )
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT otp_code,code FROM otp  order by rand()limit 1")
+    myresult = mycursor.fetchall()
+    list_of_categories_id = []
+    timezone = "Asia/Jakarta"
+    for rows in myresult:
+        otp_code = rows[0]
+        code = rows[1]
+        l.client.headers['Authorization'] = "Bearer " + rows[0] 
+        l.client.headers['Accept'] = "application/json"
+        l.client.headers['x-Timezone'] = timezone
+        response = l.client.get("/api/v1/latih-quran/user/setting") 
+        json_response_dict = response.json()
+        if json_response_dict['code'] != 200:
+            raise FlowException('not found') 
+
+
+def latihQuranEnergy(l):
+    mydb = mysql.connector.connect(
+    host= CONST_HOST,
+    user= CONST_USER,
+    passwd= CONST_PSWD,
+    database= CONST_DTBS
+    )
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT otp_code,code FROM otp  order by rand()limit 1")
+    myresult = mycursor.fetchall()
+    list_of_categories_id = []
+    timezone = "Asia/Jakarta"
+    for rows in myresult:
+        otp_code = rows[0]
+        code = rows[1]
+        l.client.headers['Authorization'] = "Bearer " + rows[0] 
+        l.client.headers['Accept'] = "application/json"
+        l.client.headers['x-Timezone'] = timezone
+        response = l.client.get("/api/v1/latih-quran/user/energy") 
+        json_response_dict = response.json()
+        if json_response_dict['code'] != 200:
+            raise FlowException('not found') 
+            
     
 def landingPageGetTopUstad(l):
     l.client.headers['Accept'] = "application/json"
@@ -232,7 +281,7 @@ def landingPageRandomSelfReminder(l):
 class UserBehavior(TaskSet):
     tasks = {sholatTime:1, landingPageGetTopUstad:2, landingPageRandomSelfReminder:2, 
                 consultationOnGoing:1, consultationUstadList:1, storeItemList:1, storeItemListGroup:1,
-                SelfReminderCategoryList:1,SelfReminderCategoryChoose:1,SelfReminderList:1 }
+                SelfReminderCategoryList:1,SelfReminderCategoryChoose:1,SelfReminderList:1,latihQuranSetting:1,latihQuranEnergy:1 }
     #tasks = {register:1, signin: 3, profile: 1}
 
 class WebsiteUser(HttpLocust):
