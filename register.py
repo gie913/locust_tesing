@@ -150,6 +150,27 @@ def validateOTP(l):
     mydb.commit()
     
 
+def checkToken(l):
+    mydb = mysql.connector.connect(
+    host= CONST_HOST,
+    user= CONST_USER,
+    passwd= CONST_PSWD,
+    database= CONST_DTBS
+    )
+    mycursor = mydb.cursor()
+    mycursor.execute("SELECT otp_code,code FROM otp  order by rand()limit 1")
+    myresult = mycursor.fetchall()
+ 
+    for rows in myresult:
+        otp_code = rows[0]
+        code = rows[1]
+        l.client.headers['Authorization'] = "Bearer " + rows[0] 
+        l.client.headers['Accept'] = "application/json"
+        response = l.client.get("/api/token/check?scope=free") 
+        json_response_dict = response.json()
+        if json_response_dict['code'] != 200:
+            raise FlowException('not found') 
+
 
 def logout(l):
     l.client.get("/api/v1/signout")
@@ -161,7 +182,7 @@ def profile(l):
     l.client.get("/profile")
 
 class UserBehavior(TaskSet):
-    tasks = {register:3, requestOTP:2, validateOTP:1}
+    tasks = {register:2, requestOTP:2, validateOTP:1,checkToken:1}
     #tasks = {register:1, signin: 3, profile: 1}
 
 class WebsiteUser(HttpLocust):
